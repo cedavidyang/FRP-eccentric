@@ -209,7 +209,8 @@ class Column(Beam):
 
     def colcapacitysection(self):
         Nccu = self.axial_compression(confine='yes')
-        def solvecolumn(N, column=self):
+        def solvecolumn(Nscale, scale, column=self):
+            N = Nscale*scale
             e0 = column.e0
             l = column.l
             d = np.max(column.geo.xr)
@@ -227,11 +228,11 @@ class Column(Beam):
             Mu1 = N*(e0+l**2/np.pi**2*phiu)
             Mu2 = Msec
             return abs(Mu1-Mu2)
-        x0candidate = np.linspace(1e-2, 1-1e-2, 10)*Nccu
-        dM = np.array([solvecolumn(Nui) for Nui in x0candidate])
-        x0 = x0candidate[np.argmin(dM)]
-        sol = minimize(solvecolumn, x0, bounds=((0.01*Nccu, Nccu),))
-        Ncol = sol.x[0]
+        scale = 1e6
+        sol = minimize(solvecolumn, 0.5*Nccu/scale, args=(scale,),
+                bounds=((0.01*Nccu/scale, Nccu/scale),),
+                options={'iprint':-1})
+        Ncol = sol.x[0]*scale
         Ncol, Mcol, csol = self.capacity(Ncol)
         e1 = Mcol/Ncol - self.e0
         return Ncol, Mcol, e1
@@ -254,7 +255,8 @@ class Column(Beam):
         else:
             fNM = NM
             fNci = Nc
-        def solvecolumn(N, column=self, fNM=fNM, fNci=fNci):
+        def solvecolumn(Nscale, scale, column=self, fNM=fNM, fNci=fNci):
+            N = Nscale*scale
             e0 = column.e0
             l = column.l
             d = np.max(column.geo.xr)
@@ -272,11 +274,14 @@ class Column(Beam):
             Mu1 = N*(e0+l**2/np.pi**2*phiu)
             Mu2 = Msec
             return abs(Mu1-Mu2)
-        x0candidate = np.linspace(0.01*Nccu, 0.99*Nccu, 50)
-        dM = np.array([solvecolumn(Nui) for Nui in x0candidate])
+        scale = 1e6
+        x0candidate = np.linspace(0.01*Nccu, 0.99*Nccu, 50)/scale
+        dM = np.array([solvecolumn(Nui,scale) for Nui in x0candidate])
         x0 = x0candidate[np.argmin(dM)]
-        sol = minimize(solvecolumn, x0, bounds=((0.01*Nccu, 0.99*Nccu),))
-        Ncol = sol.x[0]
+        sol = minimize(solvecolumn, x0, args=(scale,),
+                bounds=((0.01*Nccu/scale, 0.99*Nccu/scale),),
+                options={'iprint':-1})
+        Ncol = sol.x[0]*scale
         Mcol = fNM(Ncol)
         ci = fNci(Ncol)
         e1 = Mcol/Ncol - self.e0

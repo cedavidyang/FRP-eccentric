@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io as sio
 from scipy.optimize import minimize
+from scipy.interpolate import interp1d
 
 from section import Price, Cost, Material, Geometry
 from column import Column
@@ -27,6 +28,7 @@ if __name__ == '__main__':
     cfrpdatabase = sio.loadmat('./database/frpdatabase.mat')['cfrpdatabase']
     e1modelArray = []
     e1sectionArray = []
+    e1section0Array = []
     e1testArray = []
     failmode = np.array([columnData[fmcol] for columnData in cfrpdatabase])
     for icol, columnData in enumerate(cfrpdatabase[failmode==1]):
@@ -130,6 +132,8 @@ if __name__ == '__main__':
         Ac = np.pi*h**2/4.
         Afb = np.array([0.])    #frp bars
         tft = columnData[tftcol]
+        Astotal = columnData[rhoscol]*Ac
+        ns = columnData[nlcol]
         tmp = np.arange(1., ns+1., 2)
         nsportion = np.insert(tmp, [0, ns/2], [0., ns])
         Asportion = (nsportion[1:]-nsportion[:-1])/ns
@@ -156,11 +160,14 @@ if __name__ == '__main__':
         e1test = etotal - e0
         # section analysis
         Nccu = column.axial_compression(confine='yes')
-        def desection(Ni, column=column, etotal=etotal):
+        def desection(Niscale, scale, column=column, etotal=etotal):
+            Ni = Niscale*scale
             Nsec,Msec,ci = column.capacity(Ni)
             return abs(Msec/Nsec-etotal)
-        sol1 = minimize(desection, Nu, bounds=((0,Nccu),))
-        Nsection = sol1.x[0]
+        scale = 1e6
+        sol1 = minimize(desection, Nu/scale, args=(scale,),
+                bounds=((0,Nccu/scale),), options={'iprint':-1})
+        Nsection = sol1.x[0]*scale
         Msection = Nsection*etotal
         # jiang and teng (2013) model
         def demodel(thetai, column=column, etotal=etotal):
