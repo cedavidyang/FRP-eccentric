@@ -172,6 +172,8 @@ if __name__ == '__main__':
         Nmodel = column.modelNmat(theta)
         Mmodel = column.modelMmat(theta)
         # add to log
+        NtestArray.append(Nu)
+        MtestArray.append(Mu)
         NsectionArray.append(Nsection)
         MsectionArray.append(Msection)
         NmodelArray.append(Nmodel)
