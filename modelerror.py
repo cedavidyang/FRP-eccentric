@@ -106,7 +106,7 @@ if __name__ == '__main__':
     NmodelArray = []
     MtestArray = []
     NtestArray = []
-    for columnData in cfrpdatabase[failmode!=0]:
+    for icol,columnData in enumerate(cfrpdatabase[failmode!=0]):
         # irrelevant data for column initialization
         matprice = {'Cconc': 104.57*8.72, 'Csteel': 4871.,
                 'Cfb': 3.90e3*7.77, 'Cft': 3.90e3*7.77}
@@ -169,6 +169,7 @@ if __name__ == '__main__':
                 bounds=((0,Nccu/scale),), options={'iprint':-1})
         Nsection = sol1.x[0]*scale
         Msection = Nsection*etotal
+        print 'section: {} out of {}'.format(icol+1, np.shape(cfrpdatabase[failmode!=0])[0])
         # jiang and teng (2013) model
         def demodel(thetai, column=column, etotal=etotal):
             Nmodel = column.modelNmat(thetai)
@@ -178,6 +179,7 @@ if __name__ == '__main__':
         theta = sol2.x[0]
         Nmodel = column.modelNmat(theta)
         Mmodel = column.modelMmat(theta)
+        print 'model: {} out of {}'.format(icol+1, np.shape(cfrpdatabase[failmode!=0])[0])
         # add to log
         NtestArray.append(Nu)
         MtestArray.append(Mu)
