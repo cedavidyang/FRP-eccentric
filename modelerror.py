@@ -208,7 +208,7 @@ if __name__ == '__main__':
     NtestArray = np.array(NtestArray)
     MtestArray = np.array(MtestArray)
 
-    sio.savemat('modelerror.mat', {'e1testArray': e1testArray,
+    sio.savemat('./data/modelerror.mat', {'e1testArray': e1testArray,
         'e1modelArray': e1modelArray, 'e1sectionArray': e1sectionArray,
         'NsectionArray': NsectionArray, 'MsectionArray': MsectionArray,
         'NmodelArray': NmodelArray, 'MmodelArray': MmodelArray,
