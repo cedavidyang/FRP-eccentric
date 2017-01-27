@@ -182,25 +182,41 @@ class Column(Beam):
         Ac = self.geo.Ac
         Nbal = 0.8*fcc*Ac
         Nccu = self.axial_compression(confine='yes')
-        solthetalb = minimize(lambda x: abs(self.modelNmat(x)-0.1*Nccu),
+        solthetalb = minimize(lambda x: abs(self.modelNmat(x)-0.01*Nccu),
                 (0.1+0.75)/2., bounds=((0.1,0.75),))
         thetalb = solthetalb.x[0]
-        soltheta0 = minimize(lambda x: abs(self.modelNmat(x)-Nbal),
-                (0.1+0.75)/2., bounds=((0.1,0.75),))
-        theta0 = soltheta0.x[0]
-        def solvecolumn(theta, column=self, Nbal=Nbal, phibal=phibal):
-            e0 = column.e0
-            l = column.l
-            Nu = column.modelNmat(theta)
-            xi1 = Nbal/Nu
-            if xi1>1: xi1=1
-            Mu1 = Nu*(e0+l**2/np.pi**2*xi1*phibal)
-            Mu2 = column.modelMmat(theta)
-            return abs(Mu1-Mu2)
+        if model is 'jiangteng13':
+            def solvecolumn(theta, column=self, Nbal=Nbal, phibal=phibal):
+                e0 = column.e0
+                l = column.l
+                Nu = column.modelNmat(theta)
+                xi1 = Nbal/Nu
+                if xi1>1: xi1=1
+                Mu1 = Nu*(e0+l**2/np.pi**2*xi1*phibal)
+                Mu2 = column.modelMmat(theta)
+                return abs(Mu1-Mu2)
+        elif model is 'jiangteng13e1':
+            def solvecolumn(theta, column=self, Nbal=Nbal, phibal=phibal):
+                D = column.geo.h
+                d = np.max(column.geo.xr)
+                e0 = column.e0
+                l = column.l
+                Nu = column.modelNmat(theta)
+                csol = D-D*np.cos(theta*np.pi)
+                er = (d-csol)/csol*ecu
+                eru = column.mat.eru
+                if er>eru or er<-eru:    # control by reinforcement failure
+                    ecf = csol/(d-csol)*eru
+                else:
+                    ecf = ecu
+                phiu = ecf/csol
+                Mu1 = Nu*(e0+l**2/np.pi**2*phiu)
+                Mu2 = column.modelMmat(theta)
+                return abs(Mu1-Mu2)
         x0candidate = np.linspace(thetalb, 0.75, 50)
         dM = np.array([solvecolumn(thetai) for thetai in x0candidate])
         x0 = x0candidate[np.argmin(dM)]
-        sol = minimize(solvecolumn, x0, bounds=((thetalb, 0.75),))
+        sol = minimize(solvecolumn, x0, bounds=((thetalb, 0.75),), options={'iprint':-1})
         theta = sol.x[0]
         Ncol = self.modelNmat(theta)
         Mcol = self.modelMmat(theta)
