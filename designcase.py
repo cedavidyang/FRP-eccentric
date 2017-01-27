@@ -1,7 +1,4 @@
 import numpy as np
-import scipy.io as sio
-from scipy.optimize import minimize
-from scipy.interpolate import interp1d
 
 from section import Price, Cost, Material, Geometry
 from column import Column
