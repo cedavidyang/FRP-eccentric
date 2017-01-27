@@ -62,21 +62,26 @@ def benchmark(tfsol=tfsol, price=price, cost=cost):
     column.setcolgeo(l, e0)
     return column
 
-def designcol(tfsol=tfsol, e2D=None, rhos=None, d2D=None, fco=None, fcc2fco=None):
+def designcol(tfsol=tfsol, **kwargs):
     benchcol = benchmark()
-    if e2D is not None:
+    # for charateristic design cases
+    if kwargs.has_key('e2D') and (kwargs['e2D'] is not None):
+        e2D = kwargs['e2D']
         benchcol.e0 = benchcol.geo.h*e2D
-    if rhos is not None:
+    if kwargs.has_key('rhos') and (kwargs['rhos'] is not None):
+        rhos = kwargs['rhos']
         rhos0 = np.sum(benchcol.geo.As)/benchcol.geo.Ac
         benchcol.geo.As = benchcol.geo.As*rhos/rhos0
-    if d2D is not None:
+    if kwargs.has_key('d2D') and (kwargs['d2D'] is not None):
+        d2D = kwargs['d2D']
         h = benchcol.geo.h
         ns = np.shape(benchcol.geo.xs)[0]*2-2
         alphas = np.linspace(0., 1., ns/2+1)*np.pi
         rs = d2D*h/2.
         xs = h/2. - rs*np.cos(alphas)
         benchcol.geo.xs = xs
-    if fco is not None:
+    if kwargs.has_key('fco') and (kwargs['fco'] is not None):
+        fco = kwargs['fco']
         fcc2fco0 = benchcol.mat.fcc/benchcol.mat.fco
         if np.isclose(fcc2fco0,1.25,atol=1e-3):
             rhoi = 0
@@ -94,7 +99,8 @@ def designcol(tfsol=tfsol, e2D=None, rhos=None, d2D=None, fco=None, fcc2fco=None
         benchcol.geo.tft = tft
         benchcol.mat.fc = fco
         benchcol.mat.fco = fco
-    if fcc2fco is not None:
+    if kwargs.has_key('fcc2fco') and (kwargs['fcc2fco'] is not None):
+        fcc2fco = kwargs['fcc2fco']
         if fcc2fco == 1.25:
             rhoi = 0
         elif fcc2fco == 1.50:
@@ -109,6 +115,28 @@ def designcol(tfsol=tfsol, e2D=None, rhos=None, d2D=None, fco=None, fcc2fco=None
             fci = 2
         tft = tfsol[rhoi,fci]
         benchcol.geo.tft = tft
+    benchcol.setfrpcolmat()
+    return benchcol
+
+
+def samplecol(benchcol, **kwargs):
+    # for MC simulation
+    if kwargs.has_key('h') and (kwargs['h'] is not None):
+        hsmp = kwargs['h']
+        benchcol.geo.h = hsmp
+    if kwargs.has_key('fco') and (kwargs['fco'] is not None):
+        fcosmp = kwargs['fco']
+        benchcol.mat.fco = fcosmp
+        benchcol.mat.fc = fcosmp
+    if kwargs.has_key('fs') and (kwargs['fs'] is not None):
+        frsmp = kwargs['fs']
+        benchcol.mat.fr = frsmp
+    if kwargs.has_key('ff') and (kwargs['ff'] is not None):
+        ffsmp = kwargs['ff']
+        benchcol.mat.eh = ffsmp/benchcol.mat.Eh
+    if kwargs.has_key('Ef') and (kwargs['Ef'] is not None):
+        Efsmp = kwargs['Ef']
+        benchcol.mat.Eh = Efsmp
     benchcol.setfrpcolmat()
     return benchcol
 
