@@ -88,7 +88,7 @@ if __name__ == '__main__':
         column.setcolgeo(l, e0)
         Ncolmodel, Mcolmodel, e1model = column.colcapacitymodel()
         print 'model: {} out of {}'.format(icol+1, np.shape(cfrpdatabase[failmode==1])[0])
-        Ncolsection, Mcolsection, e1section = column.colcapacitysection_fittedcurves()
+        Ncolsection, Mcolsection, e1section = column.colcapacitysection_fittedcurve()
         # add to log
         e1testArray.append(e1test)
         e1modelArray.append(e1model)

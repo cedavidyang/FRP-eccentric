@@ -253,7 +253,7 @@ class Column(Beam):
         e1 = Mcol/Ncol - self.e0
         return Ncol, Mcol, e1
 
-    def colcapacitysection_fittedcurves(self, NM=None, Nc=None):
+    def colcapacitysection_fittedcurve(self, NM=None, Nc=None):
         Nccu = self.axial_compression(confine='yes')
         if NM is None or Nc is None:
             NarraySection = np.linspace(1e-3, 1-1e-3, 50)*Nccu
