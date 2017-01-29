@@ -135,7 +135,10 @@ def samplecol(benchcol, **kwargs):
         ffsmp = kwargs['ff']
         benchcol.mat.eh = ffsmp/benchcol.mat.Eh
     if kwargs.has_key('Ef') and (kwargs['Ef'] is not None):
+        eh0 = benchcol.mat.eh
+        Eh0 = benchcol.mat.Eh
         Efsmp = kwargs['Ef']
+        benchcol.mat.eh = eh0*Eh0/benchcol.mat.Eh
         benchcol.mat.Eh = Efsmp
     benchcol.setfrpcolmat()
     return benchcol
