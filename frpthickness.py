@@ -4,24 +4,17 @@ from scipy.optimize import minimize
 
 from section import Price, Cost, Material, Geometry
 from column import Column
+from constants import *
 
-fr = 400.0
-Er = 200e3
-ecu = 0.0033
-eco = 0.002
-eh = 1.5/100
-Eh = 230e3
-h = 400.0
-rhos = 0.01
-ns = 12.
-d2D = 0.8
-
-def fcc2fco(tf, fco):
-    # irrelevant data for column initialization
-    matprice = {'Cconc': 104.57*8.72, 'Csteel': 4871.,
-            'Cfb': 3.90e3*7.77, 'Cft': 3.90e3*7.77}
-    price = Price(matprice=matprice)
-    cost = Cost(price)
+def fcc2fco(tf, fco, eco=0.002, ecu=0.0033):
+    fr = FRDESIGN
+    Er = ERDESIGN
+    eh = EPHDESIGN
+    Eh = EHDESIGN
+    h = HDESIGN
+    rhos = RHOSDESIGN
+    ns = NSDESIGN
+    d2D = DS2DDESIGN
     # define material
     fc = fco
     # rupture strain of steel is assmued to be 100 times larger than yield strain
@@ -67,7 +60,7 @@ if __name__ == '__main__':
     for rhoindx, rhoi in enumerate(fcc2fcoArray):
         for fcoindx, fcoi in enumerate(fcoArray):
             tfmin = 0.01*fcoi/eco*h/(2*Eh)
-            sol = minimize(lambda x: abs(fcc2fco(x,fcoi)-rhoi), x0=1.0,
+            sol = minimize(lambda x: abs(fcc2fco(x,fcoi,eco,ecu)-rhoi), x0=1.0,
                     bounds=((tfmin,None),),
                     options={'iprint':1})
             tf = sol.x

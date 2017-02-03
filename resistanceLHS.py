@@ -6,27 +6,15 @@ from pyDOE import lhs
 
 from designcase import benchmark, designcol, samplecol
 from createRV.funcs import lognstats, wblstats
+from constants import *
 
 import time
 import datetime
 from pathos.multiprocessing import Pool
 
-
-H2MEAN = 1.524; HSTD = 6.35
-FCO2MEAN = 1.20; FCOCOV = 0.10
-FS2MEAN = 1.20; FSCOV = 0.10
-FFRP2MEAN = 1.25; FFRPCOV = 0.12
-EFRP2MEAN = 1.0; EFRPCOV = 0.10
-L2MEAN = 1.00; L2COV = 0.25
-D2MEAN = 1.05; D2COV = 0.10
-
-meNmean = 1.2176; meNcov = 0.10471
-mee1mean = 1.85014; mee1cov = 0.17244
-rNe1 = 0.6326
-
-def samplecolarray(benchcol, nsim):
+def samplecolarray(benchcol, nsim, medict=None, criterion='corr', iterations=500):
     # lhs samples
-    lhdp = lhs(5, samples=nsim, criterion='corr', iterations=500)
+    lhdp = lhs(7, samples=nsim, criterion=criterion, iterations=iterations)
     # random variable D
     hnom = benchcol.geo.h
     hmean = hnom + H2MEAN
@@ -59,6 +47,13 @@ def samplecolarray(benchcol, nsim):
     [logEfmean, logEfstd] = lognstats(Efrpnom, Efrpstd)
     rvEf = stats.lognorm(logEfstd, scale=np.exp(logEfmean))
     Efsmp = rvEf.ppf(lhdp[:,4])
+    # random variable Efrp
+    Efrpnom = benchcol.mat.Eh
+    Efrpmean = Efrpnom*EFRP2MEAN
+    Efrpstd = Efrpmean*EFRPCOV
+    [logEfmean, logEfstd] = lognstats(Efrpnom, Efrpstd)
+    rvEf = stats.lognorm(logEfstd, scale=np.exp(logEfmean))
+    Efsmp = rvEf.ppf(lhdp[:,4])
     # put into colArray
     colArray = np.empty((nsim,), dtype=object)
     for icol,col in enumerate(colArray):
@@ -66,7 +61,24 @@ def samplecolarray(benchcol, nsim):
         col = samplecol(col, h=hsmp[icol], fco=fcosmp[icol],
                 fs=fssmp[icol], ff=ffsmp[icol], Ef=Efsmp[icol])
         colArray[icol] = col
-    return colArray
+    # model errors
+    if medict is None:
+        dnmean = DNMEAN
+        dnstd = DNSTD
+        demean = DEMEAN
+        destd = DESTD
+    else:
+        dnmean = medict['dnmean']
+        dnstd = medict['dnstd']
+        demean = medict['demean']
+        destd = medict['destd']
+    [logDNmean, logDNstd] = lognstats(dnmean, dnstd)
+    rvdN = stats.lognorm(logDNstd, scale=np.exp(logDNmean))
+    dNsmp = rvdN.ppf(lhdp[:,5])
+    [logDEmean, logDEstd] = lognstats(demean, destd)
+    rvdE = stats.lognorm(logDEstd, scale=np.exp(logDEmean))
+    dEsmp = rvdE.ppf(lhdp[:,6])
+    return colArray,dNsmp,dEsmp
 
 def conductLHS(colArray,nprocess=1):
     start_delta_time = time.time()
@@ -88,10 +100,11 @@ def conductLHS(colArray,nprocess=1):
 
 if __name__ == '__main__':
     np.random.seed(seed=1)
-    col0 = benchmark()
+    tfsol = np.load('./data/tfsol.npy')
+    col0 = benchmark(tfsol)
     # N0,M0,et0 = col0.colcapacitysection_fittedcurve()
-    nsim = 5
-    colarraytest = samplecolarray(col0, nsim)
+    nsim = 6
+    colarraytest,dNsmp,dEsmp = samplecolarray(col0, nsim,iterations=1000)
     # # series run
     # resistmtr = np.empty((2,nsim))
     # for i,col in enumerate(colarraytest):
@@ -107,5 +120,5 @@ if __name__ == '__main__':
         print 'MC: {} out of {}'.format(i+1, nsim)
 
     # save results
-    np.save('resistsmp.npy', resistmtr)
-    sio.savemat('resistsmp.mat', {'resistmtr': resistmtr})
+    np.savez('./data/resistsmp.npz', resistmtr=resistmtr, dNsmp=dNsmp, dEsmp=dEsmp)
+    sio.savemat('./data/resistsmp.mat', {'resistmtr': resistmtr, 'dNsmp':dNsmp, 'dEsmp':dEsmp})

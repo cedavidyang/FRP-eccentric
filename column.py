@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 
 from section import Price, Cost, Material, Geometry
 from beam import Beam
+from constants import GAMMA_FC, CFRP_K
 import sys
 
 class Column(Beam):
@@ -14,11 +15,11 @@ class Column(Beam):
         self.e0 = e0
         self.colend = colend
 
-    def setfrpcolmat(self, model='tengetal09'):
+    def setfrpcolmat(self, model='tengetal09', code=None):
         if model.lower() == 'tengetal09':
             Esec0 = self.mat.fc/self.mat.eco
             rhoK = 2*self.mat.Eh*self.geo.tft/(Esec0*self.geo.h)
-            rhoE = self.mat.eh/self.mat.eco
+            rhoE = CFRP_K*self.mat.eh/self.mat.eco
             if rhoK<0.01:
                 fcc2fco = 1.
             else:
@@ -28,7 +29,10 @@ class Column(Beam):
             # 1.75 is replaced by 1.65 for GB
             ecu2eco = 1.65+6.5*rhoK**0.8*rhoE**1.45
             ecu = ecu2eco*self.mat.eco
-            Ec = 1000*fco
+            if code is None:
+                Ec = 1000*fco
+            elif code.lower() == 'gb':
+                Ec = 1000*fco*GAMMA_FC
             E2 = (fcc-fco)/ecu
             et = 2*fco/(Ec-E2)
             def concss(ec, fco=fco, fcc=fcc, E2=E2, Ec=Ec, et=et, ecu=ecu):    # must be scalar function
@@ -98,7 +102,7 @@ class Column(Beam):
         c0 = 0.5*d
         res = minimize(objfunc, c0, method='L-BFGS-B', bounds=((0.1*d,None),))
         # res = minimize(objfunc, c0, bounds=((0.1*d,None),))
-        csol = res.x
+        csol = res.x[0]
 
         er = (d-csol)/csol*ecu
         if er>eru or er<negeru:    # control by reinforcement failure
@@ -262,7 +266,7 @@ class Column(Beam):
             for Ni in NarraySection:
                 Nsec,Msec,ci = self.capacity(Ni)
                 MarraySection.append(Msec)
-                ciarray.append(ci[0])
+                ciarray.append(ci)
             MarraySection = np.array(MarraySection)
             fNM = interp1d(NarraySection, MarraySection, bounds_error=False,
                     fill_value=(MarraySection[0], MarraySection[-1]))
@@ -298,8 +302,8 @@ class Column(Beam):
                 bounds=((0.01*Nccu/scale, 0.99*Nccu/scale),),
                 options={'iprint':-1})
         Ncol = sol.x[0]*scale
-        Mcol = fNM(Ncol)
-        ci = fNci(Ncol)
+        Mcol = fNM(Ncol)[()]
+        ci = fNci(Ncol)[()]
         e1 = Mcol/Ncol - self.e0
         return Ncol, Mcol, e1
 
