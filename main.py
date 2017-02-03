@@ -18,8 +18,8 @@ import sys
 
 if __name__ == '__main__':
     np.random.seed(1)
-    nprocess = 4
-    nlhs = 500; iterations = 10000
+    nprocess = 2
+    nlhs = 4; iterations = 10000
     analysisNo = input('Reliability analysis number:')
     # some parameters
     if analysisNo == 1:
@@ -206,7 +206,6 @@ if __name__ == '__main__':
     print("RELIABILITY-BASED CALIBRATION: END====================")
 
 
-    sys.exit(1)
     # save data for postprocessing
     if frptype.lower() in {'cfrp', 'c'}:
         filename = './data/calibration-cfrp.mat'
@@ -214,3 +213,6 @@ if __name__ == '__main__':
         filename = './data/calibration-gfrp.mat'
     sio.savemat(filename, {'pfsysArray': pfsysArray, 'pf1Array':pf1Array, 'pf2Array':pf2Array,
         'betasysArray':betasysArray, 'beta1Array':beta1Array, 'beta2Array':beta2Array})
+
+    from emailreminder import send_notification
+    send_notification()
