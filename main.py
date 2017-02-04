@@ -58,6 +58,8 @@ if __name__ == '__main__':
             # save results
             sio.savemat('./data/modelerror-cfrp.mat', {'e1testArray': e1testArray,
                 'e1modelArray': e1modelArray, 'e1sectionArray': e1sectionArray,
+                'etestArray':etestArray, 'emodelArray':emodelArray,
+                'esectionAray':esectionArray,
                 'NsectionArray': NsectionArray, 'MsectionArray': MsectionArray,
                 'NmodelArray': NmodelArray, 'MmodelArray': MmodelArray,
                 'NtestArray': NtestArray, 'MtestArray': MtestArray
