@@ -19,8 +19,8 @@ import sys
 if __name__ == '__main__':
     try:
         np.random.seed(1)
-        nprocess = 2
-        nlhs = 4; iterations = 10000
+        nprocess = 20
+        nlhs = 400; iterations = 2000
         analysisNo = input('Reliability analysis number:')
         # some parameters
         if analysisNo == 1:
@@ -35,14 +35,14 @@ if __name__ == '__main__':
 
         # model error analysis
         print("MODEL ERROR ANALYSIS: BEGIN====================")
-        if frptype.lower() in {'cfrp', 'c'}:
+        if frptype.lower() in ['cfrp', 'c']:
             database = sio.loadmat('./database/frpdatabase.mat')['cfrpdatabase']
             if os.path.isfile('./data/modelerror-cfrp.mat'):
                 medata = sio.loadmat('./data/modelerror-cfrp.mat')
                 conductme = False
             else:
                 conductme = True
-        elif frptype.lower() in {'gfrp', 'g'}:
+        elif frptype.lower() in ['gfrp', 'g']:
             database = sio.loadmat('./database/frpdatabase.mat')['gfrpdatabase']
             if os.path.isfile('./data/modelerror-gfrp.mat'):
                 medata = sio.loadmat('./data/modelerror-gfrp.mat')
