@@ -147,7 +147,12 @@ lgd = legend([hdataArray(1), hdataArray(2), hregArray(1), hregArray(2), href], .
 postfigs(fig4, 'asce', false, ftsize);
 
 %% postprocessin of model error data of e1 (section)
-mee1 = e1testArray'./e1sectionArray';
+load ../database/frpdatabase.mat
+e0col = 19+1;
+fmcol = 25+1;
+failmode = cfrpdatabase(:,fmcol);
+e0array = cfrpdatabase(failmode==1, e0col);
+mee1 = (e0col+e1testArray)'./(e0col+e1sectionArray)';
 fprintf(strcat('e1 model error mean = %.5f\n'), mean(mee1));
 fprintf(strcat('e1 model error std = %.5f\n'), std(mee1));
 fprintf(strcat('e1 model error cov = %.5f\n'), std(mee1)/mean(mee1));
