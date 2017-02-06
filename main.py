@@ -19,7 +19,7 @@ import sys
 if __name__ == '__main__':
     try:
         np.random.seed(1)
-        nprocess = 20
+        nprocess = 10
         nlhs = 400; iterations = 2000
         analysisNo = input('Reliability analysis number:')
         # some parameters
@@ -210,9 +210,9 @@ if __name__ == '__main__':
 
 
         # save data for postprocessing
-        if frptype.lower() in {'cfrp', 'c'}:
+        if frptype.lower() in ['cfrp', 'c']:
             filename = './data/calibration-cfrp.mat'
-        elif frptype.lower() in {'gfrp', 'g'}:
+        elif frptype.lower() in ['gfrp', 'g']:
             filename = './data/calibration-gfrp.mat'
         sio.savemat(filename, {'pfsysArray': pfsysArray, 'pf1Array':pf1Array, 'pf2Array':pf2Array,
             'betasysArray':betasysArray, 'beta1Array':beta1Array, 'beta2Array':beta2Array})
