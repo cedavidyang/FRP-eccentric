@@ -32,7 +32,7 @@ NSDESIGN = 12.
 EPHDESIGN = 1.5/100
 EHDESIGN = 230e3
 # parametric study
-E2DARRAY = np.linspace(0.5, 0.25, 5)
+E2DARRAY = np.linspace(0.05, 0.25, 5)
 RHOSARRAY = np.linspace(0.01, 0.05, 5)
 DS2DARRAY = np.array([0.7, 0.8, 0.9])
 FCC2FCOARRAY = np.array([1.25, 1.50, 1.75])
