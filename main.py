@@ -19,8 +19,8 @@ import sys
 if __name__ == '__main__':
     try:
         np.random.seed(1)
-        nprocess = 10
-        nlhs = 400; iterations = 2000
+        nprocess = 40
+        nlhs = 400; iterations = 10000
         analysisNo = input('Reliability analysis number:')
         # some parameters
         if analysisNo == 1:
