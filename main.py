@@ -181,7 +181,7 @@ if __name__ == '__main__':
             Mmu = np.mean(Mlhs)
             Msigma = np.std(Mlhs)
             [logMmean, logMstd] = lognstats(Mmu, Msigma)
-            rvM = stats.lognorm(logNstd, scale=np.exp(logMmean))
+            rvM = stats.lognorm(logMstd, scale=np.exp(logMmean))
             for gammacc in gammaccArray:
                 # load effects
                 coldesign = loadcol(coli,code=code, gammacc=gammacc)
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                                 [0., 0., 1., 0.],
                                 [0., 0., 0., 1]])
                 # e0 is magnified to increase pf
-                pfsys,pf1,pf2 = msr_form(rvnames, rvs, corr, col0.e0)
+                pfsys,pf1,pf2 = msr_form(rvnames, rvs, corr, coldesign.e0)
                 beta1 = -stats.norm.ppf(pf1)
                 beta2 = -stats.norm.ppf(pf2)
                 betasys = -stats.norm.ppf(pfsys)
