@@ -125,7 +125,7 @@ def designcol(tfsol, **kwargs):
         rs = d2D*h/2.
         xs = h/2. - rs*np.cos(alphas)
         benchcol.geo.xs = xs
-        benchcol.geo.xr = xr
+        benchcol.geo.xr = xs
     if kwargs.has_key('fco') and (kwargs['fco'] is not None):
         fco = kwargs['fco']
         rhofcc0 = benchcol.mat.fcc/benchcol.mat.fco
