@@ -3,7 +3,7 @@ from scipy import stats
 
 from constants import L2MEAN, LCOV, D2MEAN, DCOV
 from constants import GAMMA_D_ACI, GAMMA_L_ACI, GAMMA_D_GB, GAMMA_L_GB
-from createRV.funcs import gblstats
+from createRV.funcs import gblstats,lognstats
 from pyStRe import ProbData, AnalysisOpt, Gfunc, CompReliab, SysReliab
 
 def loadrv(coldesign, rhoLD=1.0, code='gb'):
@@ -175,7 +175,7 @@ def msr_form(rvnames, rvs, corr, e0=None, **kwargs):
     return pfsys, pf1, pf2
 
 def sysmc(rvnames, rvs, corr, e0=None, nsim=int(1e5)):
-    """rvnames= ['deltaN', 'deltae', 'N', 'M', 'D', 'L']
+    """rvnames= ['N', 'M', 'D', 'L']
        rvs= coresponding rvs
        corr: matrix of coefficients of correlation of random variables
        system Monte Carlo to verify msr_form
@@ -184,10 +184,17 @@ def sysmc(rvnames, rvs, corr, e0=None, nsim=int(1e5)):
     meanNM = np.array([rvs[0].stats('m')[()], rvs[1].stats('m')[()]])
     stdNM = np.sqrt(np.array([[rvs[0].stats('v')[()], 0.],
         [0., rvs[1].stats('v')[()]]]))
+    [logNmean, logNstd] = lognstats(meanNM[0], stdNM[0,0])
+    [logMmean, logMstd] = lognstats(meanNM[1], stdNM[1,1])
     corrNM = corr[-2:, -2:]
     covNM = np.matmul(np.matmul(stdNM, corrNM), stdNM)
-    rvNM = stats.multivariate_normal(mean=meanNM, cov=covNM)
-    NMsmps = rvNM.rvs(size=nsim)
+    tmp = np.exp(logNmean+logMmean+0.5*(logNstd**2+logMstd**2))
+    rNM = np.log(covNM[0,1]/tmp+1)
+    meanlogNM = np.array([logNmean, logMmean])
+    covlogNM = np.array([[logNstd**2, rNM], [rNM, logMstd**2]])
+    rvlogNM = stats.multivariate_normal(mean=meanlogNM, cov=covlogNM)
+    logNMsmps = rvlogNM.rvs(size=nsim)
+    NMsmps = np.exp(logNMsmps)
     Nsmps = NMsmps[:,0]
     Msmps = NMsmps[:,1]
     # load samples
