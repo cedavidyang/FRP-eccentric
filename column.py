@@ -49,7 +49,7 @@ class Column(Beam):
             sys.exit(1)
 
     def axial_compression(self, confine='no'):
-        if confine is 'yes':
+        if confine == 'yes':
             if self.geo.rtype.lower() == 'rc':
                 # consider reinforcement contribution
                 Nr = np.sum(self.geo.Ar*self.mat.fr)
@@ -189,7 +189,7 @@ class Column(Beam):
         solthetalb = minimize(lambda x: abs(self.modelNmat(x)-0.01*Nccu),
                 (0.1+0.75)/2., bounds=((0.1,0.75),))
         thetalb = solthetalb.x[0]
-        if model is 'jiangteng13':
+        if model == 'jiangteng13':
             def solvecolumn(theta, column=self, Nbal=Nbal, phibal=phibal):
                 e0 = column.e0
                 l = column.l
@@ -199,14 +199,14 @@ class Column(Beam):
                 Mu1 = Nu*(e0+l**2/np.pi**2*xi1*phibal)
                 Mu2 = column.modelMmat(theta)
                 return abs(Mu1-Mu2)
-        elif model is 'jiangteng13e1':
+        elif model == 'jiangteng13e1':
             def solvecolumn(theta, column=self, Nbal=Nbal, phibal=phibal):
                 D = column.geo.h
                 d = np.max(column.geo.xr)
                 e0 = column.e0
                 l = column.l
                 Nu = column.modelNmat(theta)
-                csol = D-D*np.cos(theta*np.pi)
+                csol = (D/2-D/2*np.cos(theta*np.pi))/0.9
                 er = (d-csol)/csol*ecu
                 eru = column.mat.eru
                 if er>eru or er<-eru:    # control by reinforcement failure
