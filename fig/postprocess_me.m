@@ -41,7 +41,7 @@ lgd = legend([hdataArray(1), hdataArray(2), hregArray(1), hregArray(2), href], .
      'Regression (section)', 'Regression (model)',...
      'N_{u,exp} = N_{u,pre}'},...
     'Location', 'NorthWest');
-postfigs(fig1, 'asce', false, ftsize)
+postfigs(fig1, 6.5/2, false, ftsize)
 
 %% postprocessin of model error data (section)
 meN = NtestArray'./NsectionArray';
@@ -94,7 +94,7 @@ h = plot(meNunique, normcdf(meNunique, normEsts(1), normEsts(2)),...
     meNunique, 1-evcdf(-meNunique, gblEsts(1), gblEsts(2)));
 set(h, 'lineWidth', 1);
 xlabel('Model error data, \delta_m'); ylabel('CDF');
-postfigs(fig2, 'asce', false, ftsize);
+postfigs(fig2, 6.5/2, false, ftsize);
 % PDF
 fig3 = figure;
 axes3 = axes('Parent',fig3, 'box', 'on'); grid on;
@@ -110,9 +110,14 @@ h = plot(meNaug, normpdf(meNaug, normEsts(1), normEsts(2)),...
     meNaug, evpdf(-meNaug, gblEsts(1), gblEsts(2)));
 set(h, 'lineWidth', 1);
 xlabel('Model error data, \delta_m'); ylabel('PDF');
-postfigs(fig3, 'asce', false, ftsize);
+postfigs(fig3, 6.5/2, false, ftsize);
 
 %% linear plot (e1)
+load ../database/frpdatabase.mat
+e0col = 19+1;
+fmcol = 25+1;
+failmode = cfrpdatabase(:,fmcol);
+e0array = cfrpdatabase(failmode==1, e0col);
 fig4 = figure;
 axes4 = axes('Parent',fig4, 'box', 'on');
 hold(axes4,'all');
@@ -120,7 +125,7 @@ e1preCell = {e1sectionArray, e1modelArray};
 datamarker = {'o', '^'};
 regstyle = {'--', '-.'};
 datacolor = {[0, 0.45, 0.74], [0,0.5,0]};
-axis([1, 14, 1, 14])
+axis([0, 14, 0, 14])
 for i=1:2
     e1pre = e1preCell{i}';
     e1test = e1testArray';
@@ -135,7 +140,7 @@ for i=1:2
     hdataArray(i) = hdata;
     hregArray(i) = hreg;
 end
-axis([1, 14, 1, 14])
+axis([0, 14, 0, 14])
 href = refline(1, 0); set(href, 'Color','r', 'LineStyle', '-');
 xlabel('Predicted extra eccentricity, e_{1,pre} (mm)')
 ylabel('Extra eccentricity from tests, e_{1,pre} (mm)')
@@ -144,15 +149,11 @@ lgd = legend([hdataArray(1), hdataArray(2), hregArray(1), hregArray(2), href], .
      'Regression (section)', 'Regression (model)',...
      'e_{1,exp} = 2_{1,pre}'},...
     'Location', 'Southeast');
-postfigs(fig4, 'asce', false, ftsize);
+postfigs(fig4, 6.5/2, false, ftsize);
 
 %% postprocessin of model error data of e1 (section)
-load ../database/frpdatabase.mat
-e0col = 19+1;
-fmcol = 25+1;
-failmode = cfrpdatabase(:,fmcol);
-e0array = cfrpdatabase(failmode==1, e0col);
-mee1 = (e0col+e1testArray)'./(e0col+e1sectionArray)';
+% mee1 = (e0col+e1testArray)'./(e0col+e1sectionArray)';
+mee1 = e1testArray' ./ e1sectionArray';
 fprintf(strcat('e1 model error mean = %.5f\n'), mean(mee1));
 fprintf(strcat('e1 model error std = %.5f\n'), std(mee1));
 fprintf(strcat('e1 model error cov = %.5f\n'), std(mee1)/mean(mee1));
@@ -198,7 +199,7 @@ h = plot(mee1unique, normcdf(mee1unique, normEsts(1), normEsts(2)),...
     mee1unique, 1-evcdf(-mee1unique, gblEsts(1), gblEsts(2)));
 set(h, 'lineWidth', 1);
 xlabel('Model error data, \delta_m'); ylabel('CDF');
-postfigs(fig5, 'asce', false, ftsize);
+postfigs(fig5, 6.5/2, false, ftsize);
 % PDF
 fig6 = figure;
 axes6 = axes('Parent',fig6, 'box', 'on'); grid on;
@@ -214,4 +215,13 @@ h = plot(mee1aug, normpdf(mee1aug, normEsts(1), normEsts(2)),...
     mee1aug, evpdf(-mee1aug, gblEsts(1), gblEsts(2)));
 set(h, 'lineWidth', 1);
 xlabel('Model error data, \delta_m'); ylabel('PDF');
-postfigs(fig6, 'asce', false, ftsize);
+postfigs(fig6, 6.5/2, false, ftsize);
+
+%% model error correlation
+fig7 = figure;
+axes7 = axes('Parent',fig7, 'box', 'on'); grid on;
+hold(axes7,'all');
+plot(meN, mee1, 'o');
+xlabel('Section model error data, \delta_s'); 
+ylabel('Eccentricity model error data, \delta_e');
+postfigs(fig7, 6.5/2, false, ftsize);
