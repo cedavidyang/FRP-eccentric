@@ -204,7 +204,7 @@ if __name__ == '__main__':
     cfrpdatabase = sio.loadmat('./database/frpdatabase.mat')['cfrpdatabase']
     colArray, Nu, Mu, e0 = testcolarray(cfrpdatabase, failcode=1, fccmodel='tengetal09', code='gb')
     e1testArray, e1modelArray, e1sectionArray,\
-        etestArray, emodelArray, esectionArray = test2model_ecc(colArray, Nu, Mu, e0, colmodel='jiangteng13', code='gb')
+        etestArray, emodelArray, esectionArray = test2model_ecc(colArray, Nu, Mu, e0, colmodel='jiangteng13e1', code='gb')
     NtestArray, NmodelArray, NsectionArray,\
             MtestArray, MmodelArray, MsectionArray = test2model_Ru(colArray, Nu, Mu, e0, colmodel='jiangteng13', code='gb')
 

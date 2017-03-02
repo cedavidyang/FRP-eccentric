@@ -80,10 +80,11 @@ def samplecolarray(benchcol, nsim, medict=None, criterion='corr', iterations=500
     dEsmp = rvdE.ppf(lhdp[:,6])
     return colArray,dNsmp,dEsmp
 
-def conductLHS(colArray,nprocess=1):
+def conductLHS(colArray,model='jiangteng13', nprocess=1):
     start_delta_time = time.time()
-    def mcevaluate(smp):
-        return smp.colcapacitysection_fittedcurve()
+    def mcevaluate(smp, model=model):
+        # return smp.colcapacitysection_fittedcurve()
+        return smp.colcapacitymodel(model=model)
     print 'CALC: Parallel version'
     try:
         pool = Pool(processes=nprocess)

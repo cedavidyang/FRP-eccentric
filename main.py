@@ -7,7 +7,7 @@ from constants import *
 from modelerror import testcolarray, test2model_ecc, test2model_Ru
 from designcase import fcc2fco, benchmark, designcol, samplecol, loadcol
 from resistanceLHS import samplecolarray, conductLHS
-from reliability import msr_form, loadrv
+from reliability import msr_form, loadrv, sysmc
 from createRV.funcs import gblstats, lognstats
 from pyStRe import ProbData, AnalysisOpt, Gfunc, CompReliab, SysReliab
 
@@ -19,14 +19,14 @@ import sys
 if __name__ == '__main__':
     try:
         np.random.seed(1)
-        nprocess = 40
-        nlhs = 400; iterations = 10000
+        nprocess = 2
+        nlhs = 800; iterations = 10000
         analysisNo = input('Reliability analysis number:')
         # some parameters
         if analysisNo == 1:
             frptype = 'cfrp'
             code = 'gb'
-            colmodel = 'jiangteng13'
+            colmodel = 'jiangteng13e1'
             fccmodel = 'tengetal09'
             eco = ECO_GB
             ecu = ECU_GB
@@ -52,14 +52,14 @@ if __name__ == '__main__':
         if conductme:
             colArray, Nu, Mu, e0 = testcolarray(database, failcode=1, fccmodel='tengetal09', code='gb')
             e1testArray, e1modelArray, e1sectionArray,\
-                etestArray, emodelArray, esectionArray = test2model_ecc(colArray, Nu, Mu, e0, colmodel='jiangteng13', code='gb')
+                etestArray, emodelArray, esectionArray = test2model_ecc(colArray, Nu, Mu, e0, colmodel=colmodel, code='gb')
             NtestArray, NmodelArray, NsectionArray,\
-                MtestArray, MmodelArray, MsectionArray = test2model_Ru(colArray, Nu, Mu, e0, colmodel='jiangteng13', code='gb')
+                MtestArray, MmodelArray, MsectionArray = test2model_Ru(colArray, Nu, Mu, e0, colmodel=colmodel, code='gb')
             # save results
             sio.savemat('./data/modelerror-cfrp.mat', {'e1testArray': e1testArray,
                 'e1modelArray': e1modelArray, 'e1sectionArray': e1sectionArray,
                 'etestArray':etestArray, 'emodelArray':emodelArray,
-                'esectionAray':esectionArray,
+                'esectionArray':esectionArray,
                 'NsectionArray': NsectionArray, 'MsectionArray': MsectionArray,
                 'NmodelArray': NmodelArray, 'MmodelArray': MmodelArray,
                 'NtestArray': NtestArray, 'MtestArray': MtestArray
@@ -81,6 +81,10 @@ if __name__ == '__main__':
                 'dnstd': np.std(NtestArray/NsectionArray),
                 'demean': np.mean(etestArray/esectionArray),
                 'destd': np.std(etestArray/esectionArray)}
+        medictmodel = {'dnmean': np.mean(NtestArray/NmodelArray),
+                'dnstd': np.std(NtestArray/NmodelArray),
+                'demean': np.mean(etestArray/emodelArray),
+                'destd': np.std(etestArray/emodelArray)}
         print("MODEL ERROR ANALYSIS: END====================")
 
 
@@ -138,10 +142,14 @@ if __name__ == '__main__':
                 lhsreslist.append(resistdata)
             else:
                 print 'LHS: {} out of {} columns'.format(icol+1, np.shape(coldesignArray)[0])
-                colarraytest,dNsmp,dEsmp = samplecolarray(coli, nlhs,
-                        medict=medict, iterations=iterations)
+                if 'e1' in colmodel:
+                    colarraytest,dNsmp,dEsmp = samplecolarray(coli, nlhs,
+                            medict=medictmodel, iterations=iterations)
+                else:
+                    colarraytest,dNsmp,dEsmp = samplecolarray(coli, nlhs,
+                            medict=medict, iterations=iterations)
                 # parallel run
-                res = conductLHS(colarraytest, nprocess=nprocess)
+                res = conductLHS(colarraytest, model=colmodel, nprocess=nprocess)
                 resistmtr = np.empty((3,nlhs))
                 for i,resi in enumerate(res):
                     resistmtr[:,i] = res[i]
@@ -162,6 +170,12 @@ if __name__ == '__main__':
         betasysArray = []
         beta1Array = []
         beta2Array = []
+        pfsysmcArray = []
+        pf1mcArray = []
+        pf2mcArray = []
+        betasysmcArray = []
+        beta1mcArray = []
+        beta2mcArray = []
         gammaccArray = np.arange(0.75, 1.75, 0.05)
         for icol, coli in enumerate(coldesignArray):
             print 'CALIBRATION: {} out of {} columns'.format(icol+1, np.shape(coldesignArray)[0])
@@ -199,6 +213,10 @@ if __name__ == '__main__':
                 beta1 = -stats.norm.ppf(pf1)
                 beta2 = -stats.norm.ppf(pf2)
                 betasys = -stats.norm.ppf(pfsys)
+                pfsysmc,pf1mc,pf2mc = sysmc(rvnames, rvs, corr, coldesign.e0, nsim=int(1e6))
+                beta1mc = -stats.norm.ppf(pf1mc)
+                beta2mc = -stats.norm.ppf(pf2mc)
+                betasysmc = -stats.norm.ppf(pfsysmc)
                 # log results
                 pfsysArray.append(pfsys)
                 pf1Array.append(pf1)
@@ -206,16 +224,26 @@ if __name__ == '__main__':
                 betasysArray.append(betasys)
                 beta1Array.append(beta1)
                 beta2Array.append(beta2)
+                pfsysmcArray.append(pfsysmc)
+                pf1mcArray.append(pf1mc)
+                pf2mcArray.append(pf2mc)
+                betasysmcArray.append(betasysmc)
+                beta1mcArray.append(beta1mc)
+                beta2mcArray.append(beta2mc)
         print("RELIABILITY-BASED CALIBRATION: END====================")
 
 
         # save data for postprocessing
         if frptype.lower() in ['cfrp', 'c']:
             filename = './data/calibration-cfrp.mat'
+            filename_mc = './data/calibration-cfrp-mc.mat'
         elif frptype.lower() in ['gfrp', 'g']:
             filename = './data/calibration-gfrp.mat'
+            filename_mc = './data/calibration-gfrp.mat'
         sio.savemat(filename, {'pfsysArray': pfsysArray, 'pf1Array':pf1Array, 'pf2Array':pf2Array,
             'betasysArray':betasysArray, 'beta1Array':beta1Array, 'beta2Array':beta2Array})
+        sio.savemat(filename_mc, {'pfsysArray': pfsysmcArray, 'pf1Array':pf1mcArray, 'pf2Array':pf2mcArray,
+            'betasysArray':betasysmcArray, 'beta1Array':beta1mcArray, 'beta2Array':beta2mcArray})
     finally:
         from emailreminder import send_notification
-        send_notification()
+        # send_notification()
