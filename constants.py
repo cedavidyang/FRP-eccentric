@@ -34,9 +34,9 @@ EHDESIGN = 230e3
 # parametric study
 E2DARRAY = np.linspace(0.05, 0.25, 5)
 RHOSARRAY = np.linspace(0.01, 0.05, 5)
-DS2DARRAY = np.array([0.7, 0.8, 0.9])
-FCC2FCOARRAY = np.array([1.25, 1.50, 1.75])
-FCOARRAY = np.array([30., 40., 50.])
+DS2DARRAY = np.linspace(0.7, 0.9, 5)
+FCC2FCOARRAY = np.linspace(1.25, 1.75, 5)
+FCOARRAY = np.linspace(30., 50., 5)
 
 
 # code specific constants
@@ -45,8 +45,8 @@ ECU_GB = 0.0033
 
 # rv parameters
 H2MEAN = 1.524; HSTD = 6.35
-FCO2MEAN = 1.20; FCOCOV = 0.10
-FS2MEAN = 1.20; FSCOV = 0.10
+FCO2MEAN = 1.24; FCOCOV = 0.15
+FS2MEAN = 1.15; FSCOV = 0.05
 FFRP2MEAN = 1.25; FFRPCOV = 0.12
 EFRP2MEAN = 1.0; EFRPCOV = 0.10
 L2MEAN = 1.00; LCOV = 0.25
