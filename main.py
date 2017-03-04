@@ -18,9 +18,9 @@ import sys
 
 if __name__ == '__main__':
     try:
-        np.random.seed(1)
-        nprocess = 2
-        nlhs = 800; iterations = 10000
+        np.random.seed(2)
+        nprocess = 4
+        nlhs = 4000; iterations = 10000
         analysisNo = input('Reliability analysis number:')
         # some parameters
         if analysisNo == 1:
@@ -93,7 +93,9 @@ if __name__ == '__main__':
         if os.path.isfile('./data/tfsol.npy'):
             tfsol = np.load('./data/tfsol.npy')
         else:
-            tfsol = np.empty((3,3),dtype=float)
+            nrho = FCC2FCOARRAY.shape[0]
+            nfco = FCOARRAY.shape[0]
+            tfsol = np.empty((nrho,nfco),dtype=float)
             for rhoindx, rhoi in enumerate(FCC2FCOARRAY):
                 for fcoindx, fcoi in enumerate(FCOARRAY):
                     tfmin = 0.01*fcoi/eco*HDESIGN/(2*EHDESIGN)
@@ -176,6 +178,8 @@ if __name__ == '__main__':
         betasysmcArray = []
         beta1mcArray = []
         beta2mcArray = []
+        # gammaccArray = np.array([1.0])
+        # for icol, coli in zip([16,17,18,19,20], np.array(coldesignArray)[16:21]):
         gammaccArray = np.arange(0.75, 1.75, 0.05)
         for icol, coli in enumerate(coldesignArray):
             print 'CALIBRATION: {} out of {} columns'.format(icol+1, np.shape(coldesignArray)[0])
@@ -199,7 +203,7 @@ if __name__ == '__main__':
             for gammacc in gammaccArray:
                 # load effects
                 coldesign = loadcol(coli,code=code, gammacc=gammacc)
-                [rvNd, rvNl, Ndnom, Nlnom] = loadrv(coldesign)
+                [rvNd, rvNl, Ndnom, Nlnom] = loadrv(coldesign, model='jiangteng13', code='gb')
                 ## FORM + MSR (4 rvs)
                 # reliability evaluation
                 rvnames = ['N', 'M', 'D', 'L']
@@ -213,7 +217,7 @@ if __name__ == '__main__':
                 beta1 = -stats.norm.ppf(pf1)
                 beta2 = -stats.norm.ppf(pf2)
                 betasys = -stats.norm.ppf(pfsys)
-                pfsysmc,pf1mc,pf2mc = sysmc(rvnames, rvs, corr, coldesign.e0, nsim=int(1e6))
+                pfsysmc,pf1mc,pf2mc = sysmc(rvnames, rvs, corr, coldesign.e0, nsim=int(5e6))
                 beta1mc = -stats.norm.ppf(pf1mc)
                 beta2mc = -stats.norm.ppf(pf2mc)
                 betasysmc = -stats.norm.ppf(pfsysmc)
