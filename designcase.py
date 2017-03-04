@@ -55,20 +55,20 @@ def fcc2fco(tf, fco, eco=0.002, ecu=0.0033):
 
 def benchmark(tfsol, price=price, cost=cost):
     # benchmark data
-    h = 400.0
-    l = 1000.0
+    h = HDESIGN
+    l = LDESIGN
     e0 = 0.15*h
-    d2D = 0.80
-    fco = 30.0
-    ecu = 0.0033
-    eco = 0.002
-    fr = 400.0
-    Er = 200e3
-    rhos = 0.01
-    ns = 12.
-    eh = 1.5/100
-    Eh = 230e3
-    tft = tfsol[1,0]
+    d2D = DS2DDESIGN
+    fco = FCODESIGN
+    ecu = ECU_GB
+    eco = ECO_GB
+    fr = FRDESIGN
+    Er = ERDESIGN
+    rhos = RHOSDESIGN
+    ns = NSDESIGN
+    eh = EPHDESIGN
+    Eh = EHDESIGN
+    tft = tfsol[np.isclose(FCC2FCOARRAY,1.50),np.isclose(FCOARRAY,30.)][0]
     # benchmark column
     # define material
     fc = fco
@@ -129,37 +129,14 @@ def designcol(tfsol, **kwargs):
     if kwargs.has_key('fco') and (kwargs['fco'] is not None):
         fco = kwargs['fco']
         rhofcc0 = benchcol.mat.fcc/benchcol.mat.fco
-        if np.isclose(rhofcc0,1.25,atol=1e-3):
-            rhoi = 0
-        elif np.isclose(rhofcc0,1.50,atol=1e-3):
-            rhoi = 1
-        elif np.isclose(rhofcc0,1.75,atol=1e-3):
-            rhoi = 2
-        if fco == 30.0:
-            fci = 0
-        elif fco == 40.0:
-            fci = 1
-        elif fco == 50.0:
-            fci = 2
-        tft = tfsol[rhoi,fci]
+        tft = tfsol[np.isclose(FCC2FCOARRAY,rhofcc0),np.isclose(FCOARRAY,fco)][0]
         benchcol.geo.tft = tft
         benchcol.mat.fc = fco
         benchcol.mat.fco = fco
     if kwargs.has_key('rhofcc') and (kwargs['rhofcc'] is not None):
         rhofcc = kwargs['rhofcc']
-        if rhofcc == 1.25:
-            rhoi = 0
-        elif rhofcc == 1.50:
-            rhoi = 1
-        elif rhofcc == 1.75:
-            rhoi = 2
-        if benchcol.mat.fco == 30.0:
-            fci = 0
-        elif benchcol.mat.fco == 40.0:
-            fci = 1
-        elif benchcol.mat.fco == 50.0:
-            fci = 2
-        tft = tfsol[rhoi,fci]
+        fco = benchcol.mat.fco
+        tft = tfsol[np.isclose(FCC2FCOARRAY,rhofcc),np.isclose(FCOARRAY,fco)][0]
         benchcol.geo.tft = tft
     benchcol.setfrpcolmat()
     return benchcol
