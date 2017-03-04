@@ -6,14 +6,14 @@ from constants import GAMMA_D_ACI, GAMMA_L_ACI, GAMMA_D_GB, GAMMA_L_GB
 from createRV.funcs import gblstats,lognstats
 from pyStRe import ProbData, AnalysisOpt, Gfunc, CompReliab, SysReliab
 
-def loadrv(coldesign, rhoLD=1.0, code='gb'):
+def loadrv(coldesign, rhoLD=1.0, model='jiangteng13', code='gb'):
     if code.lower() == 'gb':
         gammaD = GAMMA_D_GB
         gammaL = GAMMA_L_GB
     elif code.lower() == 'aci':
         gammaD = GAMMA_D_ACI
         gammaL = GAMMA_L_ACI
-    Ntotal, Mtotal, e = coldesign.colcapacitymodel()
+    Ntotal, Mtotal, e = coldesign.colcapacitymodel(model=model)
     # load Nd
     Ndnom = Ntotal/(gammaD+gammaL*rhoLD)
     Ndmean = Ndnom*D2MEAN
