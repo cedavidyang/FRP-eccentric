@@ -20,7 +20,7 @@ if __name__ == '__main__':
     try:
         np.random.seed(2)
         nprocess = 4
-        nlhs = 4000; iterations = 10000
+        nlhs = 10000; iterations = 10000
         analysisNo = input('Reliability analysis number:')
         # some parameters
         if analysisNo == 1:
@@ -178,9 +178,9 @@ if __name__ == '__main__':
         betasysmcArray = []
         beta1mcArray = []
         beta2mcArray = []
-        # gammaccArray = np.array([1.0])
+        gammaccArray = np.array([1.0])
         # for icol, coli in zip([16,17,18,19,20], np.array(coldesignArray)[16:21]):
-        gammaccArray = np.arange(0.75, 1.75, 0.05)
+        # gammaccArray = np.arange(0.75, 1.75, 0.05)
         for icol, coli in enumerate(coldesignArray):
             print 'CALIBRATION: {} out of {} columns'.format(icol+1, np.shape(coldesignArray)[0])
             # resistance

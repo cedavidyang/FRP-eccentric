@@ -121,14 +121,14 @@ e0array = cfrpdatabase(failmode==1, e0col);
 fig4 = figure;
 axes4 = axes('Parent',fig4, 'box', 'on');
 hold(axes4,'all');
-e1preCell = {e1sectionArray, e1modelArray};
+e1preCell = {e1sectionArray+e0array', e1modelArray+e0array'};
 datamarker = {'o', '^'};
 regstyle = {'--', '-.'};
 datacolor = {[0, 0.45, 0.74], [0,0.5,0]};
-axis([0, 14, 0, 14])
+axis([0, 50, 0, 50])
 for i=1:2
     e1pre = e1preCell{i}';
-    e1test = e1testArray';
+    e1test = e1testArray'+e0array;
     hdata = plot(axes4, e1pre, e1test, 'marker', datamarker{i}, 'markersize', 4,...
         'Color', datacolor{i}, 'LineStyle', 'none');
     % linear regression
@@ -140,20 +140,33 @@ for i=1:2
     hdataArray(i) = hdata;
     hregArray(i) = hreg;
 end
-axis([0, 14, 0, 14])
+axis([0, 50, 0, 50])
 href = refline(1, 0); set(href, 'Color','r', 'LineStyle', '-');
 xlabel('Predicted extra eccentricity, e_{1,pre} (mm)')
 ylabel('Extra eccentricity from tests, e_{1,pre} (mm)')
 lgd = legend([hdataArray(1), hdataArray(2), hregArray(1), hregArray(2), href], ...
     {'Section analysis', 'Jiang & Teng (2013)',...
      'Regression (section)', 'Regression (model)',...
-     'e_{1,exp} = 2_{1,pre}'},...
+     'e_{1,exp} = e_{1,pre}'},...
     'Location', 'Southeast');
 postfigs(fig4, 6.5/2, false, ftsize);
 
+%% e1 comparison using different curvature models
+hcol = 1+1;
+Darray = cfrpdatabase(failmode==1, hcol);
+fig41 = figure;
+axes41 = axes('Parent',fig41, 'box', 'on');
+hold(axes41,'all');
+plot(e0array./Darray, e1testArray./e1sectionArray, '^',...
+     e0array./Darray, e1testArray./e1modelArray, 'v',...
+     e0array./Darray, e1testArray./e1modelxi1Array, 'o');
+xlabel('Normalized initial eccentricity, e_0/D');
+ylabel('Experimental / predicted deflection');
+postfigs(fig41, 6.5/2, false, ftsize);
+
 %% postprocessin of model error data of e1 (section)
-% mee1 = (e0col+e1testArray)'./(e0col+e1sectionArray)';
-mee1 = e1testArray' ./ e1sectionArray';
+mee1 = (e0col+e1testArray)'./(e0col+e1sectionArray)';
+% mee1 = e1testArray' ./ e1sectionArray';
 fprintf(strcat('e1 model error mean = %.5f\n'), mean(mee1));
 fprintf(strcat('e1 model error std = %.5f\n'), std(mee1));
 fprintf(strcat('e1 model error cov = %.5f\n'), std(mee1)/mean(mee1));
